@@ -1,0 +1,95 @@
+Tools and method to get transcrypt compiling wordl.py to wordl.js
+
+** I"m compiling everything starting with Python 3.9. 
+
+Tools:
+
+-hierarcy is for compiling console app
+-update_alternatives (system level tool for managing versioning)
+-Python version
+-Node.JS version
+-App, isolated
+
+
+
+tool stack:
+nvm (python package mgr)
+npm (python package mgr)
+pip (npm install - another package manager))
+update_alternative (system install)
+transcrypt (pip install)
+
+nvm is higher level than npm.
+npm -add for .js packages: right now I'm using commanderjs, an-array of-english-words.js
+
+
+pip install gives you the node_modules folder locally for the packages you need
+transcrypt gives you the __target__ folder
+transcrypt -b for no minimize
+
+
+From the transcrypt site, follow exactly these directions.
+    Download Python 3.9 from www.python.org
+    Install Transcrypt from the command prompt by typing python -m pip install transcrypt
+    Create a new folder hello containing hello.html and hello.py
+    Go to that new folder and type python -m transcrypt -b -m -n hello.py
+    In that same new folder start an HTTP server by typing python -m http.server
+    In your browser, navigate to localhost:8000/hello.html to see the result 
+
+
+
+
+Note:
+
+adriaan@uhuru:~/Desktop/javascript projects$ which python
+/usr/local/bin/python
+adriaan@uhuru:~/Desktop/javascript projects$ which python3
+/usr/local/bin/python3
+adriaan@uhuru:~/Desktop/javascript projects$ 
+
+
+It is super critical that 'python3' resolve to python3.8 or bash won't start, but transcrypt requires python3.9   
+
+adriaan@uhuru:~/Desktop/javascript projects$ which python
+/usr/local/bin/python
+adriaan@uhuru:~/Desktop/javascript projects$ which python3
+/usr/local/bin/python3
+adriaan@uhuru:~/Desktop/javascript projects$ 
+
+running python 3.9, pip is already installed
+python binaries 3.8 & 3.9 are copied to /usr/local/bin
+adriaan@uhuru:~/Desktop/python projects/env/bin$ sudo update-alternatives --install /usr/local/bin/python3 python3 /usr/bin/python3.8 100
+adriaan@uhuru:~/Desktop/python projects/env/bin$ sudo update-alternatives --install /usr/local/bin/python3 python /usr/bin/python3.9 10
+
+got all the files and symlinks to look like this
+
+adriaan@uhuru:/usr/local/bin$ ls -al
+total 11036
+lrwxrwxrwx  1 root root      25 Jun 25 20:39 python3 -> /etc/alternatives/python3
+-rwxr-xr-x  1 root root 5793336 Jun 25 20:04 python3.10
+-rwxr-xr-x  1 root root 5490448 Jun 25 20:04 python3.8
+...
+
+
+adriaan@uhuru:/usr/bin$ ls -al python*
+lrwxrwxrwx 1 root root       9 Jun 25 15:36 python -> python3.9
+lrwxrwxrwx 1 root root       9 Jun 25 19:25 python3 -> python3.8
+-rwxr-xr-x 1 root root 5793336 Jun 11 09:53 python3.10
+
+adriaan@uhuru:/etc/alternatives$ ls -al python*
+lrwxrwxrwx 1 root root 18 Jun 25 20:39 python -> /usr/bin/python3.9
+lrwxrwxrwx 1 root root 18 Jun 25 20:39 python3 -> /usr/bin/python3.8
+
+>!!!!!!!NO don't pip install transcrypt like this NO !!!!!!!!
+python -m pip install transcrypt
+
+Do this instead...
+python -m transcrypt -b -m -n hello.py
+
+Urls:
+https://www.transcrypt.org/home
+https://www.transcrypt.org/docs/html/installation_use.html#installation
+https://www.dabapps.com/blog/introduction-to-pip-and-virtualenv-python/
+https://linuxhint.com/update_alternatives_ubuntu/
+https://www.mytechmint.com/how-to-switch-python-version-in-linux/
+
