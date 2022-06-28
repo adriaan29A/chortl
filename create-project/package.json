@@ -1,0 +1,28 @@
+{
+    "name": "@adriaan/create-project",
+    "version": "1.0.0",
+    "description": "A CLI to bootstrap my new projects",
+    "exports": "./cli.mjs",
+    "type": "module",
+    "bin": {
+        "@adriaan/create-project": "bin/create-project.mjs",
+        "create-project": "bin/create-project.mjs"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [
+        "cli",
+        "create-project"
+    ],
+    "author": "adriaan",
+    "license": "MIT",
+    "dependencies": {
+        "arg": "^5.0.2",
+        "esm": "^3.2.18",
+        "inquirer": "^9.0.0"
+    }
+}
