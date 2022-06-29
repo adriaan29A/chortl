@@ -1,5 +1,6 @@
 import arg from 'arg';
 import inquirer from 'inquirer';
+import * as wordl from './wordl.mjs';
 
 function parseArgumentsIntoOptions(rawArgs) {
 	const args = arg(
@@ -61,12 +62,23 @@ async function promptForMissingOptions(options) {
 	};
 
 }
-   
+
 export async function cli(args) {
-	console.log("noway")
+	console.log("-->calling parse")
 	let options = await parseArgumentsIntoOptions(args);
-	console.log("yesway")
+	console.log("<--called parse")
 	console.log(options);
-	console.log("gothere")
+	console.log("done")
 }
-   
+
+export async function dowordl() {
+	wordl.main();
+}
+
+
+
+
+
+
+
+
