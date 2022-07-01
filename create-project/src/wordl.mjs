@@ -1,3 +1,7 @@
+import * as fs from 'fs';
+import inquirer from 'inquirer';
+
+
 // Transcrypt'ed from Python, 2022-06-25 23:11:42
 var math = {};
 import {AssertionError, AttributeError, BaseException, DeprecationWarning, Exception, IndexError, IterableError, KeyError, NotImplementedError, RuntimeWarning, StopIteration, UserWarning, ValueError, Warning, __JsIterator__, __PyIterator__, __Terminal__, __add__, __and__, __call__, __class__, __envir__, __eq__, __floordiv__, __ge__, __get__, __getcm__, __getitem__, __getslice__, __getsm__, __gt__, __i__, __iadd__, __iand__, __idiv__, __ijsmod__, __ilshift__, __imatmul__, __imod__, __imul__, __in__, __init__, __ior__, __ipow__, __irshift__, __isub__, __ixor__, __jsUsePyNext__, __jsmod__, __k__, __kwargtrans__, __le__, __lshift__, __lt__, __matmul__, __mergefields__, __mergekwargtrans__, __mod__, __mul__, __ne__, __neg__, __nest__, __or__, __pow__, __pragma__, __pyUseJsNext__, __rshift__, __setitem__, __setproperty__, __setslice__, __sort__, __specialattrib__, __sub__, __super__, __t__, __terminal__, __truediv__, __withblock__, __xor__, abs, all, any, assert, bool, bytearray, bytes, callable, chr, copy, deepcopy, delattr, dict, dir, divmod, enumerate, filter, float, getattr, hasattr, input, int, isinstance, issubclass, len, list, map, max, min, object, ord, pow, print, property, py_TypeError, py_iter, py_metatype, py_next, py_reversed, py_typeof, range, repr, round, set, setattr, sorted, str, sum, tuple, zip} from './org.transcrypt.__runtime__.js';
@@ -9,9 +13,9 @@ export var BASE = 3;
 export var WORD = 0;
 export var EXPECTED = 1;
 export var RANK = 2;
-export var WORDLE_DATA_FILE = 'words_bits.txt';
-export var WORD_EXPECTED_RANK_VALUES = 'word_expected_rank_values.txt';
-export var GOOGLE_20K_DATA_FILE = '20k.txt';
+export var WORDLE_DATA_FILE = './words_bits.txt';
+export var WORD_EXPECTED_RANK_VALUES = './word_expected_rank_values.txt';
+export var GOOGLE_20K_DATA_FILE = './20k.txt';
 var __left0__ = tuple ([0, 0]);
 export var DEFAULT_RANK = __left0__ [0];
 export var DEFAULT_EXPECTED = __left0__ [1];
@@ -105,21 +109,16 @@ export var filter_words = function (pattern, words, src) {
 		}
 	}
 	return matches;
-};
+}
 export var read_word_data = function (filename) {
-	var words = [];
-	var f = open (filename);
-	try {
-		f.__enter__ ();
-		var lines = f.read ().splitlines ();
-		f.close;
-		f.__exit__ ();
+	var data = ''; var words = []; var lines = [];
+
+	try {data = fs.readFileSync(filename, 'utf8');
+			lines = data.py_split('\n'); 
+		} catch (err) {
+		console.error(err); 
 	}
-	catch (__except0__) {
-		if (! (f.__exit__ (__except0__.name, __except0__, __except0__.stack))) {
-			throw __except0__;
-		}
-	}
+
 	if (filename == WORDLE_DATA_FILE) {
 		for (var line of lines) {
 			var s = line.py_split (' ');
@@ -136,13 +135,20 @@ export var read_word_data = function (filename) {
 		}
 	}
 	else {
-		for (var line of lines) {
-			var t = eval (line);
-			words.append (t);
-		}
+
+		var length = len(lines);
+		for (var i=0; i<length; i++) {
+			var l = lines[i]
+			console.error(l, i++);
+			var t = JSON.parse(l);
+			words.append(t);
+		}	
+
 	}
+
 	return words;
-};
+}
+
 export var generate_rankings = function () {
 	var t20k5 = [];
 	var t20k = read_word_data (GOOGLE_20K_DATA_FILE);
@@ -269,7 +275,27 @@ export var main = function () {
 	var matches = [];
 	var words = read_word_data (WORD_EXPECTED_RANK_VALUES);
 	for (var i = 0; i < 6; i++) {
-		var line = input ('\nWordl>: ');
+
+//		var line = input ('\nWordl>: ');
+
+		const questions = [
+			{
+			  type: 'input',
+			  name: 'name',
+			  message: "What's your name?",
+			},
+		  ];
+		  
+
+		  inquirer.prompt(questions).then(answers => {
+			console.log(`Hi ${answers.name}!`);
+		  });
+		  
+		  
+
+
+	print("fuck");
+
 		var args = line.py_split (' ');
 		if (args [0] [0] == 'q') {
 			break;
