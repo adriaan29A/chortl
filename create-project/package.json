@@ -4,9 +4,12 @@
     "description": "A CLI to bootstrap my new projects",
     "exports": "./cli.mjs",
     "type": "module",
+    "maiin": "wordl.js",
     "bin": {
-        "@adriaan/create-project": "bin/create-project.mjs",
-        "create-project": "bin/create-project.mjs"
+        "@adriaan/create-project": "src/wordl.mjs",
+        "create-project": "src/wordl.mjs",
+        "_###@adriaan/create-project": "bin/create-project.mjs",
+        "_###create-project": "bin/create-project.mjs"
     },
     "publishConfig": {
         "access": "public"

@@ -1,11 +1,11 @@
 import * as fs from 'fs';
 import inquirer from 'inquirer';
 
-
 // Transcrypt'ed from Python, 2022-06-25 23:11:42
 var math = {};
 import {AssertionError, AttributeError, BaseException, DeprecationWarning, Exception, IndexError, IterableError, KeyError, NotImplementedError, RuntimeWarning, StopIteration, UserWarning, ValueError, Warning, __JsIterator__, __PyIterator__, __Terminal__, __add__, __and__, __call__, __class__, __envir__, __eq__, __floordiv__, __ge__, __get__, __getcm__, __getitem__, __getslice__, __getsm__, __gt__, __i__, __iadd__, __iand__, __idiv__, __ijsmod__, __ilshift__, __imatmul__, __imod__, __imul__, __in__, __init__, __ior__, __ipow__, __irshift__, __isub__, __ixor__, __jsUsePyNext__, __jsmod__, __k__, __kwargtrans__, __le__, __lshift__, __lt__, __matmul__, __mergefields__, __mergekwargtrans__, __mod__, __mul__, __ne__, __neg__, __nest__, __or__, __pow__, __pragma__, __pyUseJsNext__, __rshift__, __setitem__, __setproperty__, __setslice__, __sort__, __specialattrib__, __sub__, __super__, __t__, __terminal__, __truediv__, __withblock__, __xor__, abs, all, any, assert, bool, bytearray, bytes, callable, chr, copy, deepcopy, delattr, dict, dir, divmod, enumerate, filter, float, getattr, hasattr, input, int, isinstance, issubclass, len, list, map, max, min, object, ord, pow, print, property, py_TypeError, py_iter, py_metatype, py_next, py_reversed, py_typeof, range, repr, round, set, setattr, sorted, str, sum, tuple, zip} from './org.transcrypt.__runtime__.js';
 import * as __module_math__ from './math.js';
+import { exit } from 'process';
 __nest__ (math, '', __module_math__);
 var __name__ = '__main__';
 export var N = 5;
@@ -174,7 +174,7 @@ export var generate_rankings = function () {
 		else {
 			t += tuple ([0]);
 		}
-		print (t);
+		console.log (t);
 	}
 };
 export var generate_expecteds = function () {
@@ -192,7 +192,7 @@ export var generate_expecteds = function () {
 			}
 		}
 		var nk = len (patterns.py_keys ());
-		print ('# keys=', nk);
+		console.log ('# keys=', nk);
 		var s = 0;
 		for (var p of patterns.py_keys ()) {
 			var count = patterns [p];
@@ -200,9 +200,9 @@ export var generate_expecteds = function () {
 			var bits = math.log2 (1 / probability);
 			s += probability * bits;
 		}
-		print ('{0:s} {1:n} {2:s} {3:2.5f}'.format (words [i] [WORD], count, p, s));
+		console.log ('{0:s} {1:n} {2:s} {3:2.5f}'.format (words [i] [WORD], count, p, s));
 	}
-	print ('{0:s} {1:2.5f}'.format (words [i] [0], s));
+	console.log ('{0:s} {1:2.5f}'.format (words [i] [0], s));
 };
 export var iterate_and_do = function () {
 	var matches = [];
@@ -214,19 +214,19 @@ export var iterate_and_do = function () {
 			var matches = filter_words (pattern, words, word [WORD]);
 			if (matches) {
 				var count = len (matches);
-				print (pattern, count);
+				console.log (pattern, count);
 				if (count > 15) {
 					var count = 15;
 				}
 				for (var i = 0; i < count; i++) {
-					print (matches [i], __kwargtrans__ ({end: ' '}));
+					console.log (matches [i], __kwargtrans__ ({end: ' '}));
 				}
-				print ();
-				print ();
+				console.log ();
+				console.log ();
 			}
 			else {
-				print (pattern, __kwargtrans__ ({end: ' '}));
-				print (' not matched!');
+				console.log (pattern, __kwargtrans__ ({end: ' '}));
+				console.log (' not matched!');
 			}
 			od.increment ();
 		}
@@ -263,40 +263,80 @@ export var iterate_and_do2 = function () {
 			for (var i = 0; i < Math.pow (BASE, N); i++) {
 				var res = verify_pattern (od.digits, source [WORD], target [WORD]);
 				if (res) {
-					print (od.digits, source [WORD], target [WORD]);
+					console.log (od.digits, source [WORD], target [WORD]);
 				}
 				od.increment ();
 			}
 		}
 	}
 };
+
+
 export var main = function () {
-	print ("\nWelcome to Wordl! You have 6 guesses, 'q' to quit");
+
+	console.log("\nWelcome to Wordl! You have 6 guesses, 'q' to quit");
 	var matches = [];
 	var words = read_word_data (WORD_EXPECTED_RANK_VALUES);
-	for (var i = 0; i < 6; i++) {
 
-//		var line = input ('\nWordl>: ');
-
-		const questions = [
-			{
-			  type: 'input',
-			  name: 'name',
-			  message: "What's your name?",
+	const questions = [
+		{
+			type: "input",
+			name: "fruitList",
+			message: "List all your favorite fruit",
+			filter(answer) {
+				return answer.split(/[ ,]+/).filter(Boolean);
 			},
-		  ];
-		  
+			validate(answer) {
+				if (answer.length < 1) {
+					return "Mention at least one fruit!";
+				}
+				return true;
+			},
+		}
+	  ]
+	  
 
-		  inquirer.prompt(questions).then(answers => {
-			console.log(`Hi ${answers.name}!`);
-		  });
-		  
-		  
+	  function getFruitQuestions(answers) {
+		const fruitList = answers.fruitList
+		const fruitQuestions = []
+		for (let i = 0; i < fruitList.length; i++) {
+			const fruitName = fruitList[i]
+			fruitQuestions.push(
+				{
+					type: "input",
+					name: `fruit.${fruitName}.reason`,
+					message: `Why do you like ${fruitName}?`
+				}
+			)
+		}
+		return fruitQuestions
+	  }
+	  
 
 
-	print("fuck");
 
-		var args = line.py_split (' ');
+	  inquirer
+	  .prompt(questions)
+	  .then((answers) => {
+		  inquirer.prompt(getFruitQuestions(answers)).then((fruitAnswers) => {
+			  console.log(JSON.stringify(fruitAnswers, null, 2))
+		  })
+	  })
+	  .catch((error) => {
+		  if (error.isTtyError) {
+			  console.log("Your console environment is not supported!")
+		  } else {
+			  console.log(error)
+		  }
+	  })
+	
+  //--------------------------------------------------
+
+  /*
+
+	for (var i = 0; i < 1; i++) {
+
+	  var args = line.py_split (' ');
 		if (args [0] [0] == 'q') {
 			break;
 		}
@@ -312,7 +352,7 @@ export var main = function () {
 			return py_iter (__accu0__);
 		}) (), null);
 		if (!(result)) {
-			print (word + ' is not in the dictionary!');
+			console.log (word + ' is not in the dictionary!');
 			break;
 		}
 		else {
@@ -338,18 +378,23 @@ export var main = function () {
 		var ranked_by_frequency = list (sorted (matches, __kwargtrans__ ({key: (function __lambda__ (ele) {
 			return ele [RANK];
 		}), reverse: true})));
-		print ((('\n\nWord:\t' + word) + '\tPattern: ') + pattern);
-		print ('Expected Bits:\t' + str (expectedbits));
-		print ('Actual Bits:\t' + str (actualbits));
-		print ('\nExpected values and frequencies:\n');
+		console.log ((('\n\nWord:\t' + word) + '\tPattern: ') + pattern);
+		console.log ('Expected Bits:\t' + str (expectedbits));
+		console.log ('Actual Bits:\t' + str (actualbits));
+		console.log ('\nExpected values and frequencies:\n');
 		for (var j = 0; j < count; j++) {
 			var en = ranked_by_entropy [j];
 			var fr = ranked_by_frequency [j];
-			print ('{0:s}  {1:1.2f}  {2:1.2f}   '.format (en [WORD], en [EXPECTED], en [RANK]), __kwargtrans__ ({end: ' '}));
-			print ('{0:s}  {1:1.2f}  {2:1.2f}'.format (fr [WORD], fr [EXPECTED], fr [RANK]));
+			console.log ('{0:s}  {1:1.2f}  {2:1.2f}   '.format (en [WORD], en [EXPECTED], en [RANK]), __kwargtrans__ ({end: ' '}));
+			console.log ('{0:s}  {1:1.2f}  {2:1.2f}'.format (fr [WORD], fr [EXPECTED], fr [RANK]));
 		}
 	}
-};
+
+*/
+}; 
+
+
+
 main ();
 
-//# sourceMappingURL=wordl.map
+// #sourceMappingURL=wordl.map
