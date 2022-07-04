@@ -68,7 +68,7 @@ export var verify_pattern = function (pattern, target, source) {
 						__accu0__.append (j);
 					}
 				}
-				return __accu0__;
+				return (len(__accu0__) != 0);
 			}) ()) {
 				var res = false;
 				break;
@@ -92,7 +92,7 @@ export var verify_pattern = function (pattern, target, source) {
 						__accu0__.append (j);
 					}
 				}
-				return __accu0__;
+				return (len(__accu0__) != 0);
 			}) ())) {
 				var res = false;
 				break;
@@ -137,9 +137,9 @@ export var read_word_data = function (filename) {
 	else {
 
 		var length = len(lines);
-		for (var i=0; i<length; i++) {
+		for (var i=0; i<length-1; i++) {
 			var l = lines[i]
-			console.error(l, i++);
+//			console.error(l, i);
 			var t = JSON.parse(l);
 			words.append(t);
 		}	
@@ -271,127 +271,115 @@ export var iterate_and_do2 = function () {
 	}
 };
 
+const question = [
+    {
+        type: "input",
+        name: "wordlHint",
+        message: "Enter word, hint",
+        filter(answer) {
+            return answer.split(/[ ,]+/).filter(Boolean);
+        },
+        validate(answer) {
+            if (answer.length != 2) {
+                return "Please enter  word, hint";
+            }
+            return true;
+        }
+    }
+]
+
+var words = {};
+var matches = {};
+
+function wordlMain(question) {
+
+    inquirer
+        .prompt(question)
+
+        .then((answers) => {
+
+			console.log(JSON.stringify(answers, null, 2))
+			var guess = answers.wordlHint[0];
+			var hint = answers.wordlHint[1];
+
+			matches = wordlCore(guess, hint, matches);
+			wordlMain(question);
+
+        })
+
+        .catch((error) => {
+            if (error.isTtyError) {
+                console.log("Your console environment is not supported!")
+            } else {
+                console.log(error)
+            }}) 
+}
+
+
+function wordlCore(guess, hint, matches) {
+	for (var i = 0; i < 1; i++) {
+		
+		var word = guess;
+		var pattern = hint;
+		var result = py_next ((function () {
+		var __accu0__ = [];
+		for (var [k, v] of enumerate (words)) {
+			if (v [WORD] == word) {
+				__accu0__.append (v);
+			}
+		}
+		return py_iter (__accu0__);
+	}) (), null);
+	if (!(result)) {
+		console.log (word + ' is not in the dictionary!');
+		break;
+	}
+	else {
+		var expectedbits = result [EXPECTED];
+	}
+	if (!(i)) {
+		var matches = words;
+	}
+	var matches = filter_words (pattern, matches, guess);
+	var count = len (matches);
+	if (count) {
+		var actualbits = math.log2 (count);
+	}
+	else {
+		var actualbits = 1.0;
+	}
+	if (count > 20) {
+		var count = 20;
+	}
+	var ranked_by_entropy = list (sorted (matches, __kwargtrans__ ({key: (function __lambda__ (ele) {
+		return ele [EXPECTED];
+	}), reverse: true})));
+	var ranked_by_frequency = list (sorted (matches, __kwargtrans__ ({key: (function __lambda__ (ele) {
+		return ele [RANK];
+	}), reverse: true})));
+	console.log ((('\n\nWord:\t' + word) + '\tPattern: ') + pattern);
+	console.log ('Expected Bits:\t' + str (expectedbits));
+	console.log ('Actual Bits:\t' + str (actualbits));
+	console.log ('\nExpected values and frequencies:\n');
+	for (var j = 0; j < count; j++) {
+		var en = ranked_by_entropy [j];
+		var fr = ranked_by_frequency [j];
+		console.log("%s, %f, %s %f", en[WORD], en[EXPECTED], fr[WORD], fr[RANK]);
+//		console.log ('{0:s}  {1:1.2f}  {2:1.2f}   '.format (en [WORD], en [EXPECTED], en [RANK]), __kwargtrans__ ({end: ' '}));
+//		console.log ('{0:s}  {1:1.2f}  {2:1.2f}'.format (fr [WORD], fr [EXPECTED], fr [RANK]));
+	}
+}
+return matches;
+
+}
+
+
 
 export var main = function () {
-
 	console.log("\nWelcome to Wordl! You have 6 guesses, 'q' to quit");
-	var matches = [];
-	var words = read_word_data (WORD_EXPECTED_RANK_VALUES);
-
-	const questions = [
-		{
-			type: "input",
-			name: "fruitList",
-			message: "List all your favorite fruit",
-			filter(answer) {
-				return answer.split(/[ ,]+/).filter(Boolean);
-			},
-			validate(answer) {
-				if (answer.length < 1) {
-					return "Mention at least one fruit!";
-				}
-				return true;
-			},
-		}
-	  ]
-	  
-
-	  function getFruitQuestions(answers) {
-		const fruitList = answers.fruitList
-		const fruitQuestions = []
-		for (let i = 0; i < fruitList.length; i++) {
-			const fruitName = fruitList[i]
-			fruitQuestions.push(
-				{
-					type: "input",
-					name: `fruit.${fruitName}.reason`,
-					message: `Why do you like ${fruitName}?`
-				}
-			)
-		}
-		return fruitQuestions
-	  }
-	  
-
-
-
-	  inquirer
-	  .prompt(questions)
-	  .then((answers) => {
-		  inquirer.prompt(getFruitQuestions(answers)).then((fruitAnswers) => {
-			  console.log(JSON.stringify(fruitAnswers, null, 2))
-		  })
-	  })
-	  .catch((error) => {
-		  if (error.isTtyError) {
-			  console.log("Your console environment is not supported!")
-		  } else {
-			  console.log(error)
-		  }
-	  })
-	
-  //--------------------------------------------------
-
-  /*
-
-	for (var i = 0; i < 1; i++) {
-
-	  var args = line.py_split (' ');
-		if (args [0] [0] == 'q') {
-			break;
-		}
-		var word = args [0];
-		var pattern = args [1];
-		var result = py_next ((function () {
-			var __accu0__ = [];
-			for (var [k, v] of enumerate (words)) {
-				if (v [WORD] == word) {
-					__accu0__.append (v);
-				}
-			}
-			return py_iter (__accu0__);
-		}) (), null);
-		if (!(result)) {
-			console.log (word + ' is not in the dictionary!');
-			break;
-		}
-		else {
-			var expectedbits = result [EXPECTED];
-		}
-		if (!(i)) {
-			var matches = words;
-		}
-		var matches = filter_words (pattern, matches, args [0]);
-		var count = len (matches);
-		if (count) {
-			var actualbits = math.log2 (count);
-		}
-		else {
-			var actualbits = 1.0;
-		}
-		if (count > 20) {
-			var count = 20;
-		}
-		var ranked_by_entropy = list (sorted (matches, __kwargtrans__ ({key: (function __lambda__ (ele) {
-			return ele [EXPECTED];
-		}), reverse: true})));
-		var ranked_by_frequency = list (sorted (matches, __kwargtrans__ ({key: (function __lambda__ (ele) {
-			return ele [RANK];
-		}), reverse: true})));
-		console.log ((('\n\nWord:\t' + word) + '\tPattern: ') + pattern);
-		console.log ('Expected Bits:\t' + str (expectedbits));
-		console.log ('Actual Bits:\t' + str (actualbits));
-		console.log ('\nExpected values and frequencies:\n');
-		for (var j = 0; j < count; j++) {
-			var en = ranked_by_entropy [j];
-			var fr = ranked_by_frequency [j];
-			console.log ('{0:s}  {1:1.2f}  {2:1.2f}   '.format (en [WORD], en [EXPECTED], en [RANK]), __kwargtrans__ ({end: ' '}));
-			console.log ('{0:s}  {1:1.2f}  {2:1.2f}'.format (fr [WORD], fr [EXPECTED], fr [RANK]));
-		}
-	}
-
-*/
-}; 
+	words = read_word_data (WORD_EXPECTED_RANK_VALUES);
+	wordlMain(question);
+}
 
 
 

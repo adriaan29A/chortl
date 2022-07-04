@@ -1,50 +1,41 @@
 import inquirer from 'inquirer';
 
-const questions = [
-  {
-      type: "input",
-      name: "fruitList",
-      message: "List all your favorite fruit",
-      filter(answer) {
-          return answer.split(/[ ,]+/).filter(Boolean);
-      },
-      validate(answer) {
-          if (answer.length < 1) {
-              return "Mention at least one fruit!";
-          }
-          return true;
-      },
-  }
+
+const question = [
+    {
+        type: "input",
+        name: "wordlHint",
+        message: "Enter word, hint",
+        filter(answer) {
+            return answer.split(/[ ,]+/).filter(Boolean);
+        },
+        validate(answer) {
+            if (answer.length != 2) {
+                return "Please enter  word, hint";
+            }
+            return true;
+        }
+    }
 ]
 
+function doPrompt(question) {
 
-function getFruitQuestions(answers) {
-  const fruitList = answers.fruitList
-  const fruitQuestions = []
-  for (let i = 0; i < fruitList.length; i++) {
-      const fruitName = fruitList[i]
-      fruitQuestions.push(
-          {
-              type: "input",
-              name: `fruit.${fruitName}.reason`,
-              message: `Why do you like ${fruitName}?`
-          }
-      )
-  }
-  return fruitQuestions
+    inquirer
+        .prompt(question)
+
+        .then((answers) => {
+            console.log(JSON.stringify(answers, null, 2))
+            doPrompt(question)
+
+        })
+
+        .catch((error) => {
+            if (error.isTtyError) {
+                console.log("Your console environment is not supported!")
+            } else {
+                console.log(error)
+            }}) 
 }
 
-inquirer
-  .prompt(questions)
-  .then((answers) => {
-      inquirer.prompt(getFruitQuestions(answers)).then((fruitAnswers) => {
-          console.log(JSON.stringify(fruitAnswers, null, 2))
-      })
-  })
-  .catch((error) => {
-      if (error.isTtyError) {
-          console.log("Your console environment is not supported!")
-      } else {
-          console.log(error)
-      }
-  })
+
+doPrompt(question)
