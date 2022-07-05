@@ -315,6 +315,11 @@ function wordlMain(question) {
             }}) 
 }
 
+function pretty(n) {
+	var num = n.toFixed(2);
+	var res = str(num)
+	return res;
+}
 
 function wordlCore(guess, hint, matches) {
 	for (var i = 0; i < 1; i++) {
@@ -322,54 +327,60 @@ function wordlCore(guess, hint, matches) {
 		var word = guess;
 		var pattern = hint;
 		var result = py_next ((function () {
-		var __accu0__ = [];
-		for (var [k, v] of enumerate (words)) {
-			if (v [WORD] == word) {
-				__accu0__.append (v);
+			var __accu0__ = [];
+			for (var [k, v] of enumerate (words)) {
+				if (v [WORD] == word) {
+					__accu0__.append (v);
+				}
 			}
+			return py_iter (__accu0__);
+		}) (), null);
+		if (!(result)) {
+			console.log (word + ' is not in the dictionary!');
+			break;
 		}
-		return py_iter (__accu0__);
-	}) (), null);
-	if (!(result)) {
-		console.log (word + ' is not in the dictionary!');
-		break;
-	}
-	else {
-		var expectedbits = result [EXPECTED];
-	}
-	if (!(i)) {
-		var matches = words;
-	}
-	var matches = filter_words (pattern, matches, guess);
-	var count = len (matches);
-	if (count) {
-		var actualbits = math.log2 (count);
-	}
-	else {
-		var actualbits = 1.0;
-	}
-	if (count > 20) {
+		else {
+			var expectedbits = result [EXPECTED];
+		}
+		if (!(i)) {
+			var matches = words;
+		}
+		var matches = filter_words (pattern, matches, guess);
+		var count = len (matches);
+		if (count) {
+			var actualbits = math.log2 (count);
+		}
+		else {
+			var actualbits = 1.0;
+		}
+		if (count > 20) {
 		var count = 20;
 	}
 	var ranked_by_entropy = list (sorted (matches, __kwargtrans__ ({key: (function __lambda__ (ele) {
 		return ele [EXPECTED];
 	}), reverse: true})));
+
 	var ranked_by_frequency = list (sorted (matches, __kwargtrans__ ({key: (function __lambda__ (ele) {
 		return ele [RANK];
 	}), reverse: true})));
-	console.log ((('\n\nWord:\t' + word) + '\tPattern: ') + pattern);
-	console.log ('Expected Bits:\t' + str (expectedbits));
-	console.log ('Actual Bits:\t' + str (actualbits));
-	console.log ('\nExpected values and frequencies:\n');
+
+	console.log ((('\n\nWord:\t' + word) + '\tPattern: ') + pattern + "\t");
+	console.log ('Expected Bits:\t' + str (expectedbits.toFixed(2)));
+	console.log ('Actual Bits:\t' + str (actualbits.toFixed(2)));
+	console.log ('\n\nRanked(Expected)\tRanked(Frequency):\n');
+
+	//	var res = '%c' + str(round(num*100)/100) + ' color: '+ color + 'font-size: 30px';
+	
 	for (var j = 0; j < count; j++) {
 		var en = ranked_by_entropy [j];
 		var fr = ranked_by_frequency [j];
-		console.log("%s, %f, %s %f", en[WORD], en[EXPECTED], fr[WORD], fr[RANK]);
-//		console.log ('{0:s}  {1:1.2f}  {2:1.2f}   '.format (en [WORD], en [EXPECTED], en [RANK]), __kwargtrans__ ({end: ' '}));
-//		console.log ('{0:s}  {1:1.2f}  {2:1.2f}'.format (fr [WORD], fr [EXPECTED], fr [RANK]));
+			console.log( 
+				en[WORD], " ", pretty(en[EXPECTED]), " ", pretty(en[RANK]), "\t", 
+				fr[WORD], " ", pretty(fr[RANK]), " ", pretty(fr[EXPECTED]));
+
 	}
-}
-return matches;
+	}
+	return matches;
 
 }
 
@@ -378,6 +389,7 @@ return matches;
 export var main = function () {
 	console.log("\nWelcome to Wordl! You have 6 guesses, 'q' to quit");
 	words = read_word_data (WORD_EXPECTED_RANK_VALUES);
+//	wordlCore("cares", "20021", words)
 	wordlMain(question);
 }
 
