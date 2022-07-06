@@ -269,7 +269,15 @@ export var iterate_and_do2 = function () {
 	}
 };
 
-const question = [
+//------------------------------------------------------------
+
+function pretty(n) {
+	var num = n.toFixed(2);
+	var res = str(num)
+	return res;
+}
+
+const question1 = [
     {
         type: "input",
         name: "wordlHint",
@@ -286,12 +294,65 @@ const question = [
     }
 ]
 
-var words = {};
-var matches = {};
-function wordlMain(question) {
+const question2 = [
+    {
+        type: "input",
+        name: "yn",
+        message: "More? (y/n)",
+        validate(answer) {
+            if (!(answer == 'y' || answer =='n'))
+				return "Please enter y/n";
+			else 
+				return true;
+		}
+    }
+]
+
+
+function doPromptMore(question2) {
 
     inquirer
-        .prompt(question)
+        .prompt(question2)
+
+        .then((answer) => {
+			if (answer.ynq == 'y') {
+				doOutputRows(answer.by_expected, 
+					answer.by_freq, offset, 20);
+				return doPromptMore(questions)
+			}
+			else if (answer.ynq =='n') {
+				return true;
+			}
+			else
+				return false;
+		})
+}	
+
+function doDisplayRows(by_expected, by_frequency, offset, rowsToPrint) {
+
+var listsize = len(by_expected);
+if (offset + rowsToPrint < listsize) 
+		var nrows = rowsToPrint;
+	else
+		var nrows = offset + rowsToprint - listsize;
+
+	for (var j = 0; j < nrows; j++) {
+		var row = offset + j;
+		var en = by_entropy [row];
+		var fr = by_frequency [row];
+			console.log(
+				en[WORD] + "  " + pretty(en[EXPECTED]) + "  " + pretty(en[RANK]) + "\t" + 
+				fr[WORD] + "  " + pretty(fr[RANK]) + "  " + pretty(fr[EXPECTED]));
+	}	
+}
+
+
+var words = {};
+var matches = {};
+function wordlMain(question1) {
+
+    inquirer
+        .prompt(question1)
 
         .then((answers) => {
 
@@ -299,7 +360,13 @@ function wordlMain(question) {
 			var hint = answers.wordlHint[1];
 
 			matches = wordlCore(guess, hint, matches);
-			wordlMain(question);
+/*
+			for (var i = 0; i < len(matches)/NROWS i++) {
+				if (doDisplayRows(matches, i, NROWS) {
+		
+*/
+
+			wordlMain(question1);
 
         })
 
@@ -311,11 +378,6 @@ function wordlMain(question) {
             }}) 
 }
 
-function pretty(n) {
-	var num = n.toFixed(2);
-	var res = str(num)
-	return res;
-}
 
 function wordlCore(guess, hint, matches) {
 	for (var i = 0; i < 1; i++) {
@@ -338,6 +400,7 @@ function wordlCore(guess, hint, matches) {
 		else {
 			var expectedbits = result [EXPECTED];
 		}
+		// BUG
 		if (len(matches) == 0) {
 			matches = words;
 
@@ -382,13 +445,80 @@ function wordlCore(guess, hint, matches) {
 
 }
 
+/*
+function wordlCore(guess, hint, matches) {
+	for (var i = 0; i < 1; i++) {
+		
+		var word = guess;
+		var pattern = hint;
+		var result = py_next ((function () {
+			var __accu0__ = [];
+			for (var [k, v] of enumerate (words)) {
+				if (v [WORD] == word) {
+					__accu0__.append (v);
+				}
+			}
+			return py_iter (__accu0__);
+		}) (), null);
+		if (!(result)) {
+			console.log (word + ' is not in the dictionary!');
+			break;
+		}
+		else {
+			var expectedbits = result [EXPECTED];
+		}
+		// BUG
+		if (len(matches) == 0) {
+			matches = words;
 
+		}
+
+		var c_prev = len(matches);
+		matches = filter_words (pattern, matches, guess);
+		var count = len(matches);
+
+		if (count) {
+			actualbits = math.log2(c_prev) - math.log2(count);
+		}
+		else var actualbits = 0.0; 
+		if (count > 15) {var count = 15;}
+
+		var ranked_by_entropy = list (sorted (matches, __kwargtrans__ ({key: (function __lambda__ (ele) {
+			return ele [EXPECTED];
+		}), reverse: true})));
+
+		var ranked_by_frequency = list (sorted (matches, __kwargtrans__ ({key: (function __lambda__ (ele) {
+			return ele [RANK];
+		}), reverse: true})));
+
+	console.log ((('\n\nWord:\t' + word) + '\tPattern: ') + pattern + "\t");
+	console.log ('Expected Bits:\t' + str (expectedbits.toFixed(2)));
+	console.log ('Actual Bits:\t' + str (actualbits.toFixed(2)));
+	console.log ('\n\nRanked(Expected)\tRanked(Frequency):\n');
+
+
+	for (var j = 0; j < count; j++) {
+		var en = ranked_by_entropy [j];
+		var fr = ranked_by_frequency [j];
+			console.log(
+				en[WORD] + "  " + pretty(en[EXPECTED]) + "  " + pretty(en[RANK]) + "\t" + 
+				fr[WORD] + "  " + pretty(fr[RANK]) + "  " + pretty(fr[EXPECTED]));
+
+	}
+	}
+	// careful
+	console.log(' ')
+	return matches;
+
+}
+
+*/
 
 export var main = function () {
 	console.log("\nWelcome to Wordle Cheat");
 	words = read_word_data (WORD_EXPECTED_RANK_VALUES);
 	//	wordlCore("cares", "20021", words)
-	wordlMain(question);
+	wordlMain(question1);
 }
 
 
