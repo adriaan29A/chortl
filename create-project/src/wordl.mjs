@@ -338,9 +338,9 @@ function wordlCore(guess, hint, matches) {
 		else {
 			var expectedbits = result [EXPECTED];
 		}
-		if (!(i)) {
-			var matches = words;
-			var ncorpus = len(words);
+		if (len(matches) == 0) {
+			matches = words;
+
 		}
 
 		var c_prev = len(matches);
@@ -366,8 +366,7 @@ function wordlCore(guess, hint, matches) {
 	console.log ('Actual Bits:\t' + str (actualbits.toFixed(2)));
 	console.log ('\n\nRanked(Expected)\tRanked(Frequency):\n');
 
-	//	var res = '%c' + str(round(num*100)/100) + ' color: '+ color + 'font-size: 30px';
-	
+
 	for (var j = 0; j < count; j++) {
 		var en = ranked_by_entropy [j];
 		var fr = ranked_by_frequency [j];
@@ -377,6 +376,8 @@ function wordlCore(guess, hint, matches) {
 
 	}
 	}
+	// careful
+	console.log(' ')
 	return matches;
 
 }
