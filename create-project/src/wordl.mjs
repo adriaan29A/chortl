@@ -16,6 +16,8 @@ export var RANK = 2;
 export var WORDLE_DATA_FILE = './words_bits.txt';
 export var WORD_EXPECTED_RANK_VALUES = './word_expected_rank_values.txt';
 export var GOOGLE_20K_DATA_FILE = './20k.txt';
+export var MAX_GUESSES = 6;
+
 var __left0__ = tuple ([0, 0]);
 export var DEFAULT_RANK = __left0__ [0];
 export var DEFAULT_EXPECTED = __left0__ [1];
@@ -301,25 +303,24 @@ const question2 = [
 		},
 	}];
 
-var NROWS = 20;
-
+var NROWS = 15;
 function pretty(n) {
 	var num = n.toFixed(2);
 	var res = str(num);
 	return res;
 }
 
-function display_rows(by_expected, by_frequency, pageno) {
+function display_rows(by_expected, by_frequency, pagenum) {
 
 	var listsize = len(by_expected);
-	if ((pageno + 1) * NROWS < listsize) 
+	if ((pagenum + 1) * NROWS < listsize) 
 		var rows = NROWS;
 	else
-		var rows = (pageno + 1) * NROWS - listsize;
+		var rows = (pagenum + 1) * NROWS - listsize;
 
 	for (var j = 0; j < rows; j++) {
 
-		var row = pageno * NROWS + j;
+		var row = pagenum * NROWS + j;
 		var en = by_expected [row];
 		var fr = by_frequency [row];
 			console.log(
@@ -333,8 +334,6 @@ function display_rows(by_expected, by_frequency, pageno) {
 }
 
 export var main = function () {
-//	console.log("\nWelcome to Wordle Cheat");
-	//	wordlCore("cares", "20021", words)
 	async_main();
 }
 
@@ -343,30 +342,31 @@ async function async_main() {
 	var hint; var guess; var words = []; var matches =[]; 
 	var pagenum = 0; var more = true;
 
-    console.log("\nWelcome to Chortl");
+    console.log("\nWelcome to Chortl\n");
 
 	// BUG - async this
 	words = read_word_data (WORD_EXPECTED_RANK_VALUES);
 
-    const result = await inquirer.prompt(question1);
-	guess = result[0]; 
-	hint = result[1];
+	for (var i = 0; i < MAX_GUESSES; i++) {
+		const result = await inquirer.prompt(question1);
+		guess = result[0]; 
+		hint = result[1];
 
-	// loop once for now
-	matches = words;
-	matches = filter_words (hint, matches, guess);
+		matches = words;
+		matches = filter_words (hint, matches, guess);
 
-	var ranked_by_expected = list (sorted (matches, __kwargtrans__ 
-		({key: (function __lambda__ (ele) { return ele [EXPECTED];}), reverse: true})));
+		var ranked_by_expected = list (sorted (matches, __kwargtrans__ 
+			({key: (function __lambda__ (ele) { return ele [EXPECTED];}), reverse: true})));
 
-	var ranked_by_frequency = list (sorted (matches, __kwargtrans__ 
-		({key: (function __lambda__ (ele) { return ele [RANK];}), reverse: true})));
+		var ranked_by_frequency = list (sorted (matches, __kwargtrans__ 
+			({key: (function __lambda__ (ele) { return ele [RANK];}), reverse: true})));
 
-	while (more) {
-		more = display_rows(ranked_by_expected, ranked_by_frequency, pagenum++);
-		var yn = await inquirer.prompt(question2);
-		if (yn != true)
-			break;
+		while (more) {
+			more = display_rows(ranked_by_expected, ranked_by_frequency, pagenum++);
+			var yn = await inquirer.prompt(question2);
+			if (yn != true)
+				break;
+		}
 	}
 }
 
