@@ -10,23 +10,28 @@ __nest__ (math, '', __module_math__);
 var __name__ = '__main__';
 export var N = 5;
 export var BASE = 3;
+
 export var WORD = 0;
 export var EXPECTED = 1;
 export var RANK = 2;
+
 export var WORDLE_DATA_FILE = './words_bits.txt';
 export var WORD_EXPECTED_RANK_VALUES = './word_expected_rank_values.txt';
 export var GOOGLE_20K_DATA_FILE = './20k.txt';
+
 export var MAX_GUESSES = 6;
 
 var __left0__ = tuple ([0, 0]);
 export var DEFAULT_RANK = __left0__ [0];
 export var DEFAULT_EXPECTED = __left0__ [1];
+
 export var Hint =  __class__ ('Hint', [object], {
 	__module__: __name__,
 	miss: 0,
 	hit: 1,
 	other: 2
 });
+
 export var generate_pattern = function (src, trgt) {
 	var pattern = [Hint.miss] * N;
 	for (var i = 0; i < N; i++) {
@@ -140,9 +145,8 @@ export var read_word_data = function(filename) {
 	else { // WORD_EXPECTED_RANK_VALUES
 
 		var length = len(lines);
-		for (var i=0; i<length-1; i++) {
+		for (var i = 0; i < length - 1; i++) {
 			var l = lines[i]
-//			console.error(l, i);
 			var t = JSON.parse(l);
 			words.append(t);		
 		}	
@@ -277,31 +281,25 @@ export var iterate_and_do2 = function () {
 const question1 = [
 	{
 		type: "input",
-		name: "guess_response",
-		message: "Enter result",
+		name: "guess",
+		message: "Enter guess, result:",
 		filter(answer) {
 			return answer.split(/[ ,]+/).filter(Boolean);
 		},
-		 validate(answer) {
-			if (answer.length != 2) {
-				return "Please enter  word, hint";
-			}
+		validate(answer) {
+			if (answer.count > 2)
+				return ('Enter  word, hint or \'q\' to quit');
 			return true;
 		}
+
 	}];
 	
 const question2 = [
 	{
 		type: "input",
-		name: "more_rows_yn",
-		message: "More? (y/n)",
-		filter(answer) {
-			if (answer == 'y')
-				return true;
-			else 
-				return false;
-		},
-	}];
+		name: "more",
+		message: "More? (y/n)"
+	} ];
 
 var NROWS = 15;
 function pretty(n) {
@@ -333,41 +331,86 @@ function display_rows(by_expected, by_frequency, pagenum) {
 		return true;
 }
 
+/*
+const getList = () => {
+    return Promise.resolve([
+        {
+            id: 'A001',
+            quantity: 20,
+            price: 103
+        },
+        {
+            id: 'A002',
+            quantity: 75,
+            price: 2.03
+        },
+        {
+            id: 'A003',
+            quantity: 16,
+            price: 900.01
+        }
+    ])
+}
+*/
+
+
+// list(tuples) -> list(dict) for inquirer module
+const genList = (list) => {
+
+	const choices = list.map((item, index) => {
+        return {
+            key: index,
+            name: `${item[WORD]}: ${item[EXPECTED]} ${item[RANK]}`,
+            value: item[WORD]
+        }
+    }) ;
+
+	return {
+        type: 'rawlist',
+        message: 'Enter guess, hint:',
+        name: 'choices',
+        choices: choices
+    }
+}
+
+
 export var main = function () {
 	async_main();
 }
 
 async function async_main() {
 
-	var hint; var guess; var words = []; var matches =[]; 
-	var pagenum = 0; var more = true;
-
     console.log("\nWelcome to Chortl\n");
-
-	// BUG - async this
-	words = read_word_data (WORD_EXPECTED_RANK_VALUES);
+	
+	// async this ?
+	var matches = read_word_data (WORD_EXPECTED_RANK_VALUES);
 
 	for (var i = 0; i < MAX_GUESSES; i++) {
+		
 		const result = await inquirer.prompt(question1);
-		guess = result[0]; 
-		hint = result[1];
+		var guess = result.guess[0]; var hint = result.guess[1];
 
-		matches = words;
-		matches = filter_words (hint, matches, guess);
+		// user quits
+		if ((len(result.guess) == 1) && (result.guess[0] == 'q')) {
+			return true;
+		}
 
+		var matches = filter_words (hint, matches, guess);
 		var ranked_by_expected = list (sorted (matches, __kwargtrans__ 
 			({key: (function __lambda__ (ele) { return ele [EXPECTED];}), reverse: true})));
 
 		var ranked_by_frequency = list (sorted (matches, __kwargtrans__ 
 			({key: (function __lambda__ (ele) { return ele [RANK];}), reverse: true})));
 
+		var more = true; var pagenum = 0;
 		while (more) {
 			more = display_rows(ranked_by_expected, ranked_by_frequency, pagenum++);
-			var yn = await inquirer.prompt(question2);
-			if (yn != true)
-				break;
+			const result  = await inquirer.prompt(question2);
+			if (result.more[0] == 'n')
+				more = false;
 		}
 	}
+	console.log ("Sorry!");
 }
 
 main();
