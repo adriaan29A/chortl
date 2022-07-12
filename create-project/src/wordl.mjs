@@ -19,7 +19,7 @@ export var WORDLE_DATA_FILE = './words_bits.txt';
 export var WORD_EXPECTED_RANK_VALUES = './word_expected_rank_values.txt';
 export var GOOGLE_20K_DATA_FILE = './20k.txt';
 
-export var MAX_GUESSES = 6;
+export var MAX_GUESSES = 20;
 
 var __left0__ = tuple ([0, 0]);
 export var DEFAULT_RANK = __left0__ [0];
@@ -276,61 +276,6 @@ export var iterate_and_do2 = function () {
 	}
 };
 
-//------------------------------------------------------------
-
-const question1 = [
-	{
-		type: "input",
-		name: "guess",
-		message: "Enter guess, result:",
-		filter(answer) {
-			return answer.split(/[ ,]+/).filter(Boolean);
-		},
-		validate(answer) {
-			if (answer.count > 2)
-				return ('Enter  word, hint or \'q\' to quit');
-			return true;
-		}
-
-	}];
-	
-const question2 = [
-	{
-		type: "input",
-		name: "more",
-		message: "More? (y/n)"
-	} ];
-
-var NROWS = 15;
-function pretty(n) {
-	var num = n.toFixed(2);
-	var res = str(num);
-	return res;
-}
-
-function display_rows(by_expected, by_frequency, pagenum) {
-
-	var listsize = len(by_expected);
-	if ((pagenum + 1) * NROWS < listsize) 
-		var rows = NROWS;
-	else
-		var rows = (pagenum + 1) * NROWS - listsize;
-
-	for (var j = 0; j < rows; j++) {
-
-		var row = pagenum * NROWS + j;
-		var en = by_expected [row];
-		var fr = by_frequency [row];
-			console.log(
-				en[WORD] + "  " + pretty(en[EXPECTED]) + "  " + pretty(en[RANK]) + "\t" + 
-				fr[WORD] + "  " + pretty(fr[RANK]) + "  " + pretty(fr[EXPECTED]));
-	}	
-	if (rows < NROWS)
-		return false;
-	else 
-		return true;
-}
-
 /*
 const getList = () => {
     return Promise.resolve([
@@ -354,6 +299,49 @@ const getList = () => {
 */
 
 
+
+//------------------------------------------------------------
+
+
+
+var NROWS = 15;
+function pretty(n) {
+	var num = n.toFixed(2);
+	var res = str(num);
+	return res;
+}
+
+function display_rows(by_expected, by_frequency, pagenum) {
+
+	var listsize = len(by_expected);
+	if ((pagenum + 1) * NROWS < listsize) 
+		var rows = NROWS;
+	else
+		var rows = listsize;
+
+	if (rows == 0)
+		return false;
+
+	console.log("\nSorted(Expected:)\tSorted(frequency):");
+	console.log('------------------\t-----------------');
+
+	for (var j = 0; j < rows; j++) {
+		var row = pagenum * NROWS + j;
+		var en = by_expected [row];
+		var fr = by_frequency [row];
+			console.log(
+				en[WORD] + "  " + pretty(en[EXPECTED]) + "  " + pretty(en[RANK]) + "\t" + 
+				fr[WORD] + "  " + pretty(fr[EXPECTED]) + "  " + pretty(fr[RANK]));
+	}	
+	console.log('');
+
+	if (rows < NROWS)
+		return false;
+	else 
+		return true;
+}
+
+
 // list(tuples) -> list(dict) for inquirer module
 const genList = (list) => {
 
@@ -373,10 +361,24 @@ const genList = (list) => {
     }
 }
 
+const question1 = [
+	{
+		type: "input", name: "guess", message: "Enter Wordl result:",
+		filter(answer) {
+			return answer.split(/[ ,]+/).filter(Boolean);
+		},
+		validate(answer) {
+			if (answer.count > 2)
+				return ('Enter  word, hint or \'q\' to quit');
+			return true;
+		}
+	}];
+	
+const question2 = [
+	{ 
+		type: "input", name: "more", message: "More? (y/N/)"
+	}];
 
-export var main = function () {
-	async_main();
-}
 
 async function async_main() {
 
@@ -386,7 +388,7 @@ async function async_main() {
 	var matches = read_word_data (WORD_EXPECTED_RANK_VALUES);
 
 	for (var i = 0; i < MAX_GUESSES; i++) {
-		
+		console.log('');
 		const result = await inquirer.prompt(question1);
 		var guess = result.guess[0]; var hint = result.guess[1];
 
@@ -395,22 +397,32 @@ async function async_main() {
 			return true;
 		}
 
-		var matches = filter_words (hint, matches, guess);
+		var prev_matches = matches; // filter_words makes a copy 
+		matches = filter_words (hint, matches, guess);
+		if (matches.count == 0) {
+			console.log(guess + " not in dictionary, resetting 1 step...")
+			matches = prev_matches;
+			continue;
+		}
 		var ranked_by_expected = list (sorted (matches, __kwargtrans__ 
 			({key: (function __lambda__ (ele) { return ele [EXPECTED];}), reverse: true})));
 
 		var ranked_by_frequency = list (sorted (matches, __kwargtrans__ 
 			({key: (function __lambda__ (ele) { return ele [RANK];}), reverse: true})));
 
-		var more = true; var pagenum = 0;
+		var pagenum = 0;
+		var more = true;
 		while (more) {
 			more = display_rows(ranked_by_expected, ranked_by_frequency, pagenum++);
 			const result  = await inquirer.prompt(question2);
-			if (result.more[0] == 'n')
+			if ((result.more == '') || result.more[0] == 'n')
 				more = false;
 		}
 	}
-	console.log ("Sorry!");
+}
+
+export var main = function () {
+	async_main();
 }
 
 main();
