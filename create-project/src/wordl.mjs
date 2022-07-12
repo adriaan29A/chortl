@@ -277,27 +277,28 @@ export var iterate_and_do2 = function () {
 
 //------------------------------------------------------------
 
-// list(tuples) -> list(dict) for inquirer module
+// list(tuples) -> list(dict) for inquirer.js List, RawList
 const genList = (list) => {
 
 	const choices = list.map((item, index) => {
-        return {
+		var expected = pretty(item[EXPECTED]);
+		var rank = pretty(item[RANK]);
+		return {
             key: index,
-            name: `${item[WORD]}: ${item[EXPECTED]} ${item[RANK]}`,
-            value: item[WORD]
+            name: `${index}\)\t${item[WORD]}:   ${expected}   ${rank}`,
+			value: item[WORD]
         }
     }) ;
-
 	return {
-		type: 'rawlist',
-        message: 'Sorted:',
+		type: 'list',
+        message: 'Candidates:',
         name: 'sorted',
 		pageSize: 15,
 		choices: choices
     }
 }
 const question1 = [{
-		type: "input", name: "guess", message: "Enter result:",
+		type: "input", name: "guess", message: ">:",
 		filter(answer) {
 			return answer.split(/[ ,]+/).filter(Boolean);
 		},
@@ -309,7 +310,7 @@ const question1 = [{
 }];
 	
 const question2 = [{ 
-		type: "input", name: "more", message: "More? (y/N/)"
+		type: "input", name: "more", message: "More (y/N):"
 }];
 
 function lookup_in_dictionary(word, matches) {
@@ -343,17 +344,19 @@ function display_rows(by_expected, by_frequency, pagenum) {
 
 	if (rows == 0)
 		return false;
-
-	console.log("\nSorted(Expected:)\tSorted(frequency):");
-	console.log('------------------\t-----------------');
-
+	console.log('Rank\tExpected:\t\tFrequency:')
+	console.log('----\t-----------------\t-----------------')
+	
 	for (var j = 0; j < rows; j++) {
 		var row = pagenum * NROWS + j;
 		var en = by_expected [row];
 		var fr = by_frequency [row];
 			console.log(
-				en[WORD] + "  " + pretty(en[EXPECTED]) + "  " + pretty(en[RANK]) + "\t" + 
+				str(pagenum*NROWS + j + 1) + ')\t' + en[WORD] + "  " + pretty(en[EXPECTED]) + "  " + pretty(en[RANK]) + '\t' + 
 				fr[WORD] + "  " + pretty(fr[EXPECTED]) + "  " + pretty(fr[RANK]));
+		//	console.log(
+		//		en[WORD] + "  " + pretty(en[EXPECTED]) + "  " + pretty(en[RANK]) + "\t" + 
+		//		fr[WORD] + "  " + pretty(fr[EXPECTED]) + "  " + pretty(fr[RANK]));
 	}	
 	console.log('');
 
@@ -376,12 +379,12 @@ async function async_main() {
 		var guess = result.guess[0]; var hint = result.guess[1];
 		var expectedBits = 0;
 
+		// user quits
 		if (!guess)
 			break;
 
-		// user quits
 		if ((len(result.guess) == 1) && (result.guess[0] == 'q')) 
-			return true;
+			return true;		
 
 		var entry = lookup_in_dictionary(guess, matches);
 		if (!entry) {
@@ -393,8 +396,8 @@ async function async_main() {
 		
 		var prev_length = matches.length;
 		matches = filter_words (hint, matches, guess);
-
 		var actual_bits = math.log2(prev_length) - math.log2(matches.length);
+
 		console.log('\nExpected Value:\t' + str(expectedBits.toFixed(2)) + ' Bits');
 		console.log('Actual Value\t' + str(actual_bits.toFixed(2)) + ' Bits\n');
 
@@ -413,6 +416,7 @@ async function async_main() {
 				more = false;
 		}
 	}
+	return true;
 }
 
 export var main = function () {
@@ -420,5 +424,6 @@ export var main = function () {
 }
 
 main();
-
+//	https://wordlegame.org?challenge=c2Nhcnk
 // #sourceMappingURL=wordl.map
+
