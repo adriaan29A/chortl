@@ -151,7 +151,6 @@ export var read_word_data = function(filename) {
 			words.append(t);		
 		}	
 	}
-
 	return words;
 }
 
@@ -276,32 +275,55 @@ export var iterate_and_do2 = function () {
 	}
 };
 
-/*
-const getList = () => {
-    return Promise.resolve([
-        {
-            id: 'A001',
-            quantity: 20,
-            price: 103
-        },
-        {
-            id: 'A002',
-            quantity: 75,
-            price: 2.03
-        },
-        {
-            id: 'A003',
-            quantity: 16,
-            price: 900.01
-        }
-    ])
-}
-*/
-
-
-
 //------------------------------------------------------------
 
+// list(tuples) -> list(dict) for inquirer module
+const genList = (list) => {
+
+	const choices = list.map((item, index) => {
+        return {
+            key: index,
+            name: `${item[WORD]}: ${item[EXPECTED]} ${item[RANK]}`,
+            value: item[WORD]
+        }
+    }) ;
+
+	return {
+		type: 'rawlist',
+        message: 'Sorted:',
+        name: 'sorted',
+		pageSize: 15,
+		choices: choices
+    }
+}
+const question1 = [{
+		type: "input", name: "guess", message: "Enter result:",
+		filter(answer) {
+			return answer.split(/[ ,]+/).filter(Boolean);
+		},
+		validate(answer) {
+			if (answer.length > 2)
+				return ('Enter  word, hint or \'q\' to quit');
+			return true;
+		}
+}];
+	
+const question2 = [{ 
+		type: "input", name: "more", message: "More? (y/N/)"
+}];
+
+function lookup_in_dictionary(word, matches) {
+	var item = py_next ((function () {
+		var __accu0__ = [];
+			for (var [k, v] of enumerate (matches)) {
+				if (v [WORD] == word) {
+					__accu0__.append (v);
+				}
+			}
+			return py_iter (__accu0__);
+		}) (), null);
+	return item;
+}
 
 
 var NROWS = 15;
@@ -341,69 +363,41 @@ function display_rows(by_expected, by_frequency, pagenum) {
 		return true;
 }
 
-
-// list(tuples) -> list(dict) for inquirer module
-const genList = (list) => {
-
-	const choices = list.map((item, index) => {
-        return {
-            key: index,
-            name: `${item[WORD]}: ${item[EXPECTED]} ${item[RANK]}`,
-            value: item[WORD]
-        }
-    }) ;
-
-	return {
-        type: 'rawlist',
-        message: 'Enter guess, hint:',
-        name: 'choices',
-        choices: choices
-    }
-}
-
-const question1 = [
-	{
-		type: "input", name: "guess", message: "Enter Wordl result:",
-		filter(answer) {
-			return answer.split(/[ ,]+/).filter(Boolean);
-		},
-		validate(answer) {
-			if (answer.count > 2)
-				return ('Enter  word, hint or \'q\' to quit');
-			return true;
-		}
-	}];
-	
-const question2 = [
-	{ 
-		type: "input", name: "more", message: "More? (y/N/)"
-	}];
-
-
 async function async_main() {
-
+	
     console.log("\nWelcome to Chortl\n");
 	
 	// async this ?
 	var matches = read_word_data (WORD_EXPECTED_RANK_VALUES);
 
 	for (var i = 0; i < MAX_GUESSES; i++) {
-		console.log('');
+
 		const result = await inquirer.prompt(question1);
 		var guess = result.guess[0]; var hint = result.guess[1];
+		var expectedBits = 0;
+
+		if (!guess)
+			break;
 
 		// user quits
-		if ((len(result.guess) == 1) && (result.guess[0] == 'q')) {
+		if ((len(result.guess) == 1) && (result.guess[0] == 'q')) 
 			return true;
-		}
 
-		var prev_matches = matches; // filter_words makes a copy 
-		matches = filter_words (hint, matches, guess);
-		if (matches.count == 0) {
-			console.log(guess + " not in dictionary, resetting 1 step...")
-			matches = prev_matches;
+		var entry = lookup_in_dictionary(guess, matches);
+		if (!entry) {
+			console.log(guess + ' is not in the dictionary!')
 			continue;
 		}
+		else 
+			expectedBits = entry[EXPECTED]; 
+		
+		var prev_length = matches.length;
+		matches = filter_words (hint, matches, guess);
+
+		var actual_bits = math.log2(prev_length) - math.log2(matches.length);
+		console.log('\nExpected Value:\t' + str(expectedBits.toFixed(2)) + ' Bits');
+		console.log('Actual Value\t' + str(actual_bits.toFixed(2)) + ' Bits\n');
+
 		var ranked_by_expected = list (sorted (matches, __kwargtrans__ 
 			({key: (function __lambda__ (ele) { return ele [EXPECTED];}), reverse: true})));
 
